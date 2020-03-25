@@ -27,7 +27,14 @@ func main() {
 		scanner := bufio.NewScanner(f)
 		for scanner.Scan() {
 			newContent += scanner.Text()
-			newContent += "                                             1\r\n"
+			newContent += "                                             0\r\n"
+		}
+
+		f.Close()
+		err := os.Remove(filename)
+
+		if err != nil {
+			fmt.Println(err)
 		}
 
 		newFile , err := os.Create(strings.Replace(filename, ".TXT", ".RSP", 1))
