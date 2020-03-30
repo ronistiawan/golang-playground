@@ -10,19 +10,43 @@ import (
 )
 
 // Replace with your own connection parameters
-var server = "12.12.12.88/SQLEXPRES"
+var server = "12.12.12.88"
 var port = 1433
 var user = "sa"
-var password = "S0lm1tr@321"
+var password = "S0lm1tr@123"
+var database = "SolmitraDB_STAGING"
 
 var db *sql.DB
+
+func ReadEmployees(db *sql.DB) (int, error) {
+	tsql := fmt.Sprintf("SELECT TOP(1) ID, Code, IdentityNumber FROM Member;")
+	rows, err := db.Query(tsql)
+	if err != nil {
+		fmt.Println("Error reading rows: " + err.Error())
+		return -1, err
+	}
+	defer rows.Close()
+	count := 0
+	for rows.Next() {
+		var name, location string
+		var id string
+		err := rows.Scan(&id, &name, &location)
+		if err != nil {
+			fmt.Println("Error reading rows: " + err.Error())
+			return -1, err
+		}
+		fmt.Printf("ID: %s, Code: %s, IdentityNumber: %s\n", id, name, location)
+		count++
+	}
+	return count, nil
+}
 
 func main() {
 	var err error
 
 	// Create connection string
-	connString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d",
-		server, user, password, port)
+	connString := fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
+		server, user, password, port, database)
 
 	// Create connection pool
 	db, err = sql.Open("sqlserver", connString)
@@ -31,10 +55,16 @@ func main() {
 	}
 	log.Printf("Connected!\n")
 
+	// SelectVersion()
+
+	count, err := ReadEmployees(db)
+	if err != nil {
+		log.Fatal("ReadEmployees failed:", err.Error())
+	}
+	fmt.Printf("Read %d rows successfully.\n", count)
+
 	// Close the database connection pool after program executes
 	defer db.Close()
-
-	SelectVersion()
 }
 
 // Gets and prints SQL Server version
